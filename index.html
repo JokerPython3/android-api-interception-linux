@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waydroid & Burp Suite Integration Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --text-main: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --warning: #f59e0b;
+            --code-bg: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.2);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: #ffffff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: var(--accent-secondary);
+            border-radius: 4px;
+        }
+
+        p, ul, ol {
+            margin-bottom: 15px;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+        }
+
+        /* Code Blocks Styling */
+        .code-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+        }
+
+        p code, li code {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-primary);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        /* Note Box Styling */
+        .note {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .note i {
+            color: var(--warning);
+            font-size: 1.2rem;
+            margin-top: 3px;
+        }
+
+        .note strong {
+            color: var(--warning);
+        }
+
+        /* Telegram Footer */
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            padding: 40px 0 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #2CA5E0, #1c7fb0);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(44, 165, 224, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .telegram-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(44, 165, 224, 0.6);
+            color: white;
+            text-decoration: none;
+        }
+
+        .telegram-btn i {
+            font-size: 1.3rem;
+        }
+
+        .author-tag {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .step-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Intercepting Android App APIs</h1>
+            <p class="subtitle">Using Waydroid & Burp Suite on Linux | A comprehensive guide for mobile security analysts and reverse engineers.</p>
+        </header>
+
+        <div class="step-card">
+            <h2>Step 1: Install Waydroid</h2>
+            <p>First, install the Waydroid container on your Linux host. If you are using <strong>Fedora</strong>, you can easily install it via the default package manager:</p>
+            <div class="code-container">
+                <pre><code>sudo dnf install waydroid</code></pre>
+            </div>
+            <div class="note">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Note:</strong> If you are using a different Linux distribution, please refer to the <a href="https://docs.waydro.id/usage/install-on-desktops" target="_blank">official Waydroid Desktop Installation Guide</a>.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <h2>Step 2: Install Burp Suite</h2>
+            <p>Burp Suite will act as our proxy to intercept HTTP/HTTPS traffic.</p>
+            <ol>
+                <li>Download the Linux x64 installer from the <a href="https://portswigger.net/burp/downloads" target="_blank">Official PortSwigger Website</a>.</li>
+                <li>Open your terminal, navigate to your downloads folder, and make the script executable:
+                    <div class="code-container">
+                        <pre><code>sudo chmod +x burpsuite_community_linux_v*.sh
+./burpsuite_community_linux_v*.sh</code></pre>
+                    </div>
+                </li>
+                <li>Follow the graphical installer prompts (click "Next" until finished).</li>
+            </ol>
+        </div>
+
+        <div class="step-card">
+            <h2>Step 3: Enhance Waydroid (Root & ARM Translation)</h2>
+            <p>To analyze modern apps, we need ARM translation (to run standard APKs on x86 machines) and root access. We will use <code>waydroid_script</code> to automate this.</p>
+            <div class="code-container">
+                <pre><code>git clone https://github.com/casualsnek/waydroid_script
+cd waydroid_script
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+sudo venv/bin/python3 main.py</code></pre>
+            </div>
+            <p>When the interactive menu appears, select <strong>Android 13</strong> and choose the <strong>Install</strong> option. <br>
+            <span style="color: var(--text-muted); font-size: 0.9em;"><em>(Navigation tip: Use your keyboard arrows, press <code>Space</code> to select an item, and <code>Enter</code> to confirm).</em></span></p>
+            <p>Make sure to select the following packages:</p>
+            <ul>
+                <li><strong>microG:</strong> For Google Play Services functionality without heavy bloatware.</li>
+                <li><strong>libndk:</strong> ARM translation layer.</li>
+                <li><strong>Magisk:</strong> To manage root access cleanly.</li>
+            </ul>
+        </div>
+
+        <div class="step-card">
+            <h2>Step 4: Configure Burp Suite Proxy Settings</h2>
+            <p>We need to configure Burp Suite to listen to traffic coming from Waydroid.</p>
+            <ol>
+                <li>Open Burp Suite and go to the <strong>Proxy</strong> tab &rarr; <strong>Proxy settings</strong>.</li>
+                <li>Under <strong>Proxy listeners</strong>, add or edit a listener.</li>
+                <li>Bind the port to <code>8080</code> (or <code>8000</code>).</li>
+                <li><strong>Crucial Step:</strong> For the "Bind to address" option, choose <strong>All interfaces</strong> or select your specific local network IP (e.g., <code>192.168.x.x</code>). Do <em>not</em> leave it as <code>127.0.0.1</code>, otherwise, Waydroid won't be able to reach it.</li>
+            </ol>
+        </div>
+
+        <div class="step-card">
+            <h2>Step 5: Export & Convert the CA Certificate</h2>
+            <p>To intercept HTTPS traffic, Android needs to trust Burp Suite's Certificate Authority (CA).</p>
+            <ol>
+                <li>In your Linux host browser, configure it temporarily to use the <code>127.0.0.1:8080</code> proxy.</li>
+                <li>Navigate to <code>http://burp</code> and click <strong>CA Certificate</strong> to download it (usually named <code>cacert.der</code>).</li>
+                <li>Open your terminal and convert the downloaded <code>.der</code> file to <code>.pem</code> format, then rename it to an Android-compatible system hash:
+                    <div class="code-container">
+                        <pre><code># Convert DER to PEM
+openssl x509 -inform DER -in cacert.der -out cacert.pem
+
+# Extract the subject hash
+openssl x509 -inform PEM -subject_hash_old -in cacert.pem | head -n 1</code></pre>
+                    </div>
+                    <p><span style="color: var(--text-muted); font-size: 0.9em;"><em>The second command will output a string of characters (e.g., <code>9a5ba575</code>). Copy this string.</em></span></p>
+                    <div class="code-container">
+                        <pre><code># Rename the certificate using the hash with a .0 extension
+mv cacert.pem &lt;your_hash_string&gt;.0
+# Example: mv cacert.pem 9a5ba575.0</code></pre>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step-card">
+            <h2>Step 6: Route Waydroid Traffic Through Burp Suite</h2>
+            <p>Now, start Waydroid and connect ADB.</p>
+            <div class="code-container">
+                <pre><code>waydroid session start
+waydroid adb connect</code></pre>
+            </div>
+            <p><span style="color: var(--text-muted); font-size: 0.9em;"><em>(If a prompt appears in Waydroid asking to "Allow USB debugging", check "Always allow" and click OK).</em></span></p>
+            <p>Apply the global proxy to Waydroid using your Linux host's local IP address (find this using the <code>ip a</code> command):</p>
+            <div class="code-container">
+                <pre><code>waydroid shell settings put global http_proxy &lt;YOUR_HOST_IP&gt;:&lt;BURP_PORT&gt;</code></pre>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <h2>Step 7: Inject the CA Certificate as a System Cert</h2>
+            <p>Modern Android versions (Android 8.0+) ignore user-installed certificates for apps. To analyze API signatures properly, we must inject our Burp cert directly into the system partition.</p>
+            <ol>
+                <li>Push your hashed certificate to Waydroid's download folder:
+                    <div class="code-container">
+                        <pre><code>adb push &lt;your_hash_string&gt;.0 /sdcard/Download/</code></pre>
+                    </div>
+                </li>
+                <li>Open the Waydroid root shell and remount the system partition as read-write:
+                    <div class="code-container">
+                        <pre><code>adb shell
+su
+mount -o remount,rw /</code></pre>
+                    </div>
+                </li>
+                <li>Move the certificate to the system CA directory and apply the correct permissions:
+                    <div class="code-container">
+                        <pre><code>cp /sdcard/Download/&lt;your_hash_string&gt;.0 /system/etc/security/cacerts/
+chmod 644 /system/etc/security/cacerts/&lt;your_hash_string&gt;.0</code></pre>
+                    </div>
+                </li>
+                <li>Reboot Waydroid to apply changes.</li>
+            </ol>
+        </div>
+
+        <div class="step-card">
+            <h2>Step 8: Install Apps and Start Analyzing!</h2>
+            <p>You are now ready to intercept APIs. You can easily install target applications via terminal:</p>
+            <div class="code-container">
+                <pre><code># For a standard APK:
+waydroid app install "app_name.apk"
+
+# For split APKs (XAPK extracted):
+adb install-multiple base.apk split_config.arm64_v8a.apk split_config.xxhdpi.apk</code></pre>
+            </div>
+            <p>Open the app inside Waydroid. You will now see all backend API calls, requests, and responses flowing directly into your Burp Suite dashboard!</p>
+        </div>
+
+        <footer>
+            <a href="https://t.me/Saftey_1" target="_blank" class="telegram-btn">
+                <i class="fab fa-telegram"></i> Connect with @Saftey_1
+            </a>
+            <p class="author-tag">Created for the Cybersecurity & Reverse Engineering Community</p>
+        </footer>
+    </div>
+
+</body>
+</html>
